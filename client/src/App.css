@@ -1,0 +1,90 @@
+.App {
+  width: 100vw;
+  height: 100vh;
+}
+
+.mainContainer {
+  width: 80%;
+  height: 80%;
+}
+
+.contentBox {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  justify-content:center;
+}
+
+.menuBox {
+  min-width: 150px;
+  margin-left: 10px;
+  text-align: center;
+}
+
+.menuStack {
+  border: 2px solid lightgray;
+  border-radius: 15px;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Login */
+
+
+/* Register */
+
+/* Edit info */
+
+.accountInfo {
+  min-width: 400px;
+  height: fit-content;
+}
+
+
+/* Home */
+
+.homeStack {
+  border: 2px solid lightgray;
+  border-radius: 15px;
+  padding: 10px;
+  height: fit-content;
+  min-width: 350px;
+}
+
+.userInfoBox {
+  background-color: lightblue;
+  width: fit-content;
+  margin-top: 20px;
+}
+
+
+/* Messages */
+
+.sideButtonStack {
+  border: 2px solid lightgray;
+  border-radius: 15px;
+  padding: 15px;
+  margin-right: 10px;
+  height: fit-content;
+}
+
+.messageContentStack {
+  border: 2px solid lightgray;
+  border-radius: 15px;
+  padding: 15px;
+  flex-grow: 1;
+  min-width: 300px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.sendMessageBox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.chatMessage {
+  width: fit-content;
+  word-break: keep-all;
+}
