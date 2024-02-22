@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', apiRouter);
 
-console.log(process.env.NODE_ENV)
+console.log("Server running in "+process.env.NODE_ENV+" mode")
 
 if (process.env.NODE_ENV == "production") {
   app.use(express.static(path.resolve("..", "client", "build")))

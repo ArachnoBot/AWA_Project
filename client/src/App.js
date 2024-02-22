@@ -34,7 +34,9 @@ function App() {
     theme = blackTheme
   }
 
-  
+  // Set body background color according to theme
+  document.body.style.backgroundColor = theme.palette.background.main
+
   // Function for showing alerts
   const alertFunc = (severity, text) => {
     if (errTimer) {
@@ -45,28 +47,27 @@ function App() {
     setSeverity(severity)
     setAlertText(text)
   }
-  
+
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <Container className="App" sx={{backgroundColor: theme.palette.background.main}}>
+        <div className="App">
           <Typography 
-            align='center' 
-            variant='h3' 
-            marginBottom={2} 
+            align='center'
+            variant='h3'
+            marginBottom={2}
             color={theme.palette.textColor}
           >Match</Typography>
             <Routes>
               <Route path="/" element={<Login alertFunc={alertFunc}/>}/>
               <Route path="/login" element={<Login alertFunc={alertFunc}/>}/>
               <Route path="/register" element={<Register alertFunc={alertFunc}/>}/>
-              <Route 
+              <Route
                 path="/editinfo" 
                 element={
                   <EditInfo 
                     alertFunc={alertFunc} 
                     setColorTheme={setColorTheme}
-                    
                     colorTheme={colorTheme}
                   />
                 }
@@ -77,12 +78,10 @@ function App() {
             <Container sx={{padding:3, width:"fit-content"}}>
               {severity && <Alert severity={severity}>{alertText}</Alert>}
             </Container>
-        </Container>
+        </div>
       </Router>
     </ThemeProvider>
   )
-
-
 }
 
 export default App;
