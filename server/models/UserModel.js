@@ -9,7 +9,8 @@ const UserSchema = mongoose.Schema({
   bioHead: String,
   bioText: String,
   liked: Array,
-  disliked: Array
+  disliked: Array,
+  hasNewMessages: Boolean
 })
 
 module.exports = mongoose.model("users", UserSchema);

@@ -2,39 +2,50 @@ import {
   Stack, 
   Container, 
   Typography, 
-  Box,
   Divider,
 }
 
 from '@mui/material';
 import "../App.css"
+import { useTheme } from '@emotion/react';
 
 const UserInfo = (props) => {
+  const theme = useTheme()
   const name = props.name
   const bioHead = props.bioHead
   const bioText = props.bioText
 
   return (
-    <Container>
-      <Box display={"flex"}>
-        <Stack 
-        border={2} 
-        borderColor="grey.300" 
-        borderRadius={5} 
-        p={3}
-        className='userInfoBox'>
-          <Typography variant="h4" align="center" style={{ marginBottom: '25px' }}>
-            {name}
-          </Typography>
-          <Divider></Divider>
-          <Typography variant="h6" align="center" style={{ marginBottom: '25px' }}>
-            {bioHead}
-          </Typography>
-          <Typography variant="p" align="center" style={{ marginBottom: '25px' }}>
-            {bioText}
-          </Typography>
-        </Stack>
-      </Box>
+    <Container sx={{ padding: 0 }}>
+      <Stack 
+        className='border' 
+        sx={{
+          padding:"15px", 
+          backgroundColor:theme.palette.background.box,
+          marginBottom:"10px",
+          maxWidth:"800px"
+        }}
+      >
+        <Typography 
+          variant="h4" 
+          align="center"
+          color={theme.palette.textColor}>
+          {name}
+        </Typography>
+        <Divider></Divider>
+        <Typography 
+          variant="h6" 
+          align="center" 
+          sx={{ marginTop: "8px", color: theme.palette.textColor}}>
+          {bioHead}
+        </Typography>
+        <Typography 
+          variant="p" 
+          align="center" 
+          sx={{ marginTop: "8px", color: theme.palette.textColor }}>
+          {bioText}
+        </Typography>
+      </Stack>
     </Container>
   )
 }

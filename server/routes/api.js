@@ -48,12 +48,20 @@ const isAuthenticated = (req, res, next) => {
 }
 
 // Adds a message to message document between users
-router.post("/api/sendMessage", isAuthenticated, async (req, res) => {
+router.post("/sendMessage", isAuthenticated, async (req, res) => {
   try {
     // Find the message document
-    const messageDoc = await Messages.findOne({
+    let messageDoc = await Messages.findOne({
       group: {$all: [res.locals.userEmail, req.body.secondUser]}
     })
+
+    // Create new message doc if one doesnt exist
+    if (!messageDoc) {
+      messageDoc = await Messages.create({
+        group: [res.locals.userEmail, req.body.secondUser],
+        log: []
+      })
+    }
 
     // Get the senders index in the doc's group
     const senderIndex = messageDoc.group.indexOf(res.locals.userEmail)
@@ -61,11 +69,18 @@ router.post("/api/sendMessage", isAuthenticated, async (req, res) => {
     // Add new message log to doc
     messageDoc.log.push({
       sender: senderIndex,
-      text: req.body.msgText
+      text: req.body.msgText,
+      timestamp: new Date()
     })
 
     // Save doc
     messageDoc.save()
+
+    // Update the receiver doc to show they have a new message
+    await Users.updateOne(
+      {email: req.body.secondUser},
+      {"$set": {hasNewMessages: true}}
+    )
 
     // Send confirmation or error
     res.send({
@@ -79,8 +94,33 @@ router.post("/api/sendMessage", isAuthenticated, async (req, res) => {
   }
 })
 
+// Checks if user has messages that have not been loaded
+router.get("/checkNewMessages", isAuthenticated, async (req, res) => {
+  try {
+    // Find user who made the request
+    const user = await Users.findOne({email: res.locals.userEmail})
+
+    // Reset the flag for new messages to false
+    await Users.updateOne(
+      {email: res.locals.userEmail},
+      {"$set": {hasNewMessages: false}}
+    )
+
+    // Send info about new messages or catched error
+    res.send({
+      success: true,
+      hasNewMessages: user.hasNewMessages
+    })
+  } catch(e) {
+    res.send({
+      success: false,
+      errmsg: e.toString()
+    })
+  }
+})
+
 // Finds the messages between two users
-router.post("/api/getMessages", isAuthenticated, async (req, res) => {
+router.post("/getMessages", isAuthenticated, async (req, res) => {
   try {
     // Find the message document
     const messageDoc = await Messages.findOne({
@@ -101,7 +141,7 @@ router.post("/api/getMessages", isAuthenticated, async (req, res) => {
 })
 
 // Sends back a list of users you can message with
-router.get("/api/getMessageUsers", isAuthenticated, async (req, res) => {
+router.get("/getMessageUsers", isAuthenticated, async (req, res) => {
   try {
     // Find user who made the request
     const user = await Users.findOne({email: res.locals.userEmail})
@@ -110,7 +150,7 @@ router.get("/api/getMessageUsers", isAuthenticated, async (req, res) => {
     const messageUsers = await Users.find({
       email: { $in: user.liked },
       liked: { $in: res.locals.userEmail }
-    }, { _id: 0, email: 1 })
+    }, { _id: 0, email: 1, name: 1 })
 
     // Send list of users or error
     res.send({
@@ -126,7 +166,7 @@ router.get("/api/getMessageUsers", isAuthenticated, async (req, res) => {
 })
 
 // Sends the user's account information
-router.get("/api/getUserInfo", isAuthenticated, async (req, res) => {
+router.get("/getUserInfo", isAuthenticated, async (req, res) => {
   try {
     // Find user who made the request
     const user = await Users.findOne({email: res.locals.userEmail})
@@ -147,7 +187,7 @@ router.get("/api/getUserInfo", isAuthenticated, async (req, res) => {
 })
 
 // Finds an appropriate user to be shown on the homepage
-router.get("/api/getRandomUser", isAuthenticated, async (req, res) => {
+router.get("/getRandomUser", isAuthenticated, async (req, res) => {
   try {
     // Find user who made the request
     const user = await Users.findOne({email: res.locals.userEmail})
@@ -159,7 +199,7 @@ router.get("/api/getRandomUser", isAuthenticated, async (req, res) => {
     // Get first user excluding the above
     const found = await Users.findOne({email: {$nin : excludedUsers}})
 
-    // If a user is found send their data, send a null email if not and send error if caught
+    // Send user data if found, send a null email if not and send error if caught
     if (found) {
       res.send({
         success: true,
@@ -183,7 +223,7 @@ router.get("/api/getRandomUser", isAuthenticated, async (req, res) => {
 })
 
 // Processes new user to be liked/disliked and updates database
-router.post("/api/addLikes", isAuthenticated, async (req, res) => {
+router.post("/addLikes", isAuthenticated, async (req, res) => {
   try {
     // Find user who made the request
     const user = await Users.findOne({email: res.locals.userEmail})
@@ -219,7 +259,7 @@ router.post("/api/addLikes", isAuthenticated, async (req, res) => {
 })
 
 // Takes new account info given in req body and updates the user's database document
-router.post("/api/updateUserInfo", isAuthenticated, async (req, res) => {
+router.post("/updateUserInfo", isAuthenticated, async (req, res) => {
   try {
     // Find user who made the request
     const user = await Users.findOne({email: res.locals.userEmail})
@@ -245,7 +285,7 @@ router.post("/api/updateUserInfo", isAuthenticated, async (req, res) => {
 })
 
 // Adds the user to the database and sends a jwt back
-router.post("/api/register",
+router.post("/register",
   // Check email format
   body("email").isEmail(),
   // Check password format
@@ -273,7 +313,7 @@ router.post("/api/register",
     if (!errors.isEmpty()) {
       return res.status(400).send({success: false, errmsg: errors.errors[0].msg})
     }
-
+    
     try {
       // Try to find user who made the request
       const user = await Users.findOne({email: req.body.email})
@@ -316,7 +356,7 @@ router.post("/api/register",
 })
 
 // Authenticates the user and sends a jwt back
-router.post("/api/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     // Find user who made the request
     const user = await Users.findOne({email: req.body.email})
@@ -334,10 +374,10 @@ router.post("/api/login", async (req, res) => {
 
     // Sign jwt token and send it back or send caught error
     const token = jwt.sign({email: req.body.email}, process.env.SECRET, {expiresIn: "6h"})
-    res.send(JSON.stringify({
+    res.send({
       success: true,
       token: token
-    }))
+    })
   } catch(e) {
     res.send({
       success: false,
@@ -397,7 +437,8 @@ router.get("/debug/reset", async (req, res) => {
     bioHead: "Fear me",
     bioText: "Nightmare Nightmare Nightmare Nightmare Nightmare Nightmare Nightmare ",
     liked: [],
-    disliked: []
+    disliked: [],
+    hasNewMessages: false
   })
 
   await Users.create({
@@ -407,7 +448,8 @@ router.get("/debug/reset", async (req, res) => {
     bioHead: "User bio heading",
     bioText: "User bio content. User bio content. User bio content. User bio content.",
     liked: ["admin@email.com"],
-    disliked: []
+    disliked: [],
+    hasNewMessages: false
   })
 
   await Users.create({
@@ -417,7 +459,8 @@ router.get("/debug/reset", async (req, res) => {
     bioHead: "User bio heading",
     bioText: "User bio content. User bio content. User bio content. User bio content.",
     liked: ["admin@email.com"],
-    disliked: []
+    disliked: [],
+    hasNewMessages: false
   })
 
   await Users.create({
@@ -427,7 +470,8 @@ router.get("/debug/reset", async (req, res) => {
     bioHead: "User bio heading",
     bioText: "User bio content. User bio content. User bio content. User bio content.",
     liked: [],
-    disliked: ["admin@email.com"]
+    disliked: ["admin@email.com"],
+    hasNewMessages: false
   })
 
   await Users.create({
@@ -445,27 +489,30 @@ router.get("/debug/reset", async (req, res) => {
     A rubber room with rats.They put me in a rubber room with rubber rats.
     Rubber rats? I hate rubber rats. They make me crazy.`,
     liked: ["admin@email.com"],
-    disliked: []
+    disliked: [],
+    hasNewMessages: false
   })
 
   await Users.create({
     email: "user5@email.com",
     password: "password",
     name: "User 5",
-    bioHead: "User bio heading",
-    bioText: "User bio content. User bio content. User bio content. User bio content.",
-    liked: [],
-    disliked: []
+    bioHead: "User heading",
+    bioText: "User bio content.",
+    liked: ["admin@email.com"],
+    disliked: [],
+    hasNewMessages: false
   })
 
   await Users.create({
-    email: "user6@email.com",
+    email: "user684379586375347858349758934758@email.com",
     password: "password",
     name: "User 6",
     bioHead: "User bio heading",
     bioText: "User bio content. User bio content. User bio content. User bio content.",
     liked: [],
-    disliked: []
+    disliked: [],
+    hasNewMessages: false
   })
 
   await Users.create({
@@ -475,7 +522,8 @@ router.get("/debug/reset", async (req, res) => {
     bioHead: "User bio heading",
     bioText: "User bio content. User bio content. User bio content. User bio content.",
     liked: [],
-    disliked: []
+    disliked: [],
+    hasNewMessages: false
   })
   res.send("reset done")
 })

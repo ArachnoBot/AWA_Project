@@ -7,6 +7,6 @@ const MessageSchema = mongoose.Schema({
   log: Array
 })
 
-// Log array format: [{sender: sender group index, text: message content}]
+// Log array format: [{sender: sender group index, text: message content, timestamp: date}]
 
 module.exports = mongoose.model("Messages", MessageSchema);

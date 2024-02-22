@@ -1,11 +1,10 @@
 import { 
   Stack, 
   Container, 
-  Typography, 
   Box,
   IconButton,
-  Alert,
-} 
+  useMediaQuery,
+}
 from '@mui/material';
 import Menu from "./Menu"
 import "../App.css"
@@ -14,15 +13,18 @@ import { ThumbUp } from "@mui/icons-material"
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserInfo from './UserInfo';
+import { useTheme } from '@emotion/react';
+import TabMenu from './TabMenu';
 
-const Home = () => {
+const Home = ({alertFunc}) => {
+  const theme = useTheme()
+  const desktop = useMediaQuery(theme.breakpoints.up("desktop"))
+
   // States
   const [name, setName] = useState("")
   const [bioHead, setBioHead] = useState("")
   const [bioText, setBioText] = useState("")
   const [likeEmail, setLikeEmail] = useState("")
-  const [alertText, setAlertText] = useState("")
-  const [severity, setSeverity] = useState("")
 
   const navigate = useNavigate();
 
@@ -31,7 +33,6 @@ const Home = () => {
     if (!localStorage.getItem("auth_token")) {
       navigate("/login")
     }
-
     getRandomUser()
   }, [navigate]);
 
@@ -52,8 +53,7 @@ const Home = () => {
       if (data.success) {
         getRandomUser()
       } else {
-        setSeverity("error")
-        setAlertText(data.errmsg)
+        alertFunc("error", data.errmsg)
       }
     })
   }
@@ -75,8 +75,7 @@ const Home = () => {
       if (data.success) {
         getRandomUser()
       } else {
-        setSeverity("error")
-        setAlertText(data.errmsg)
+        alertFunc("error", data.errmsg)
       }
     })
   }
@@ -103,36 +102,34 @@ const Home = () => {
           setBioText("")
         }
       } else {
-        setSeverity("error")
-        setAlertText(data.errmsg)
+        alertFunc("error", data.errmsg)
       }
     })
   }
 
   return (
-    <Container className='mainContainer'>
-      <Typography align='center' variant='h2'>Match</Typography>
+    <Container>
+      {!desktop && localStorage.getItem("auth_token") && <TabMenu index={0}></TabMenu>}
       <Box className="contentBox">
-        <Stack className='homeStack'>
+        <Stack className='border' sx={{maxWidth:"800px", minWidth:"350px", padding:"15px"}}>
           <UserInfo name={name} bioHead={bioHead} bioText={bioText}/>
           <Box
-          display={"flex"}
-          flexDirection={"row"}
-          justifyContent={"space-evenly"}
-          height={"fit-content"}
-          p={3}
+            display={"flex"}
+            flexDirection={"row"}
+            justifyContent={"space-evenly"}
+            height={"fit-content"}
+            p={1}
           >
             <IconButton onClick={handleLike} color='primary'>
-                <ThumbUp style={{fontSize:50}}/>
+              <ThumbUp style={{fontSize:50}}/>
             </IconButton>
-            <IconButton onClick={handleDislike} style={{color:"red"}}>
-                <ThumbDown style={{fontSize:50}}/>
+            <IconButton onClick={handleDislike} color="secondary">
+              <ThumbDown style={{fontSize:50}}/>
             </IconButton>
           </Box>
         </Stack>
-        <Menu></Menu>
+        {desktop && <Menu></Menu>}
       </Box>
-      {severity !== "" && <Alert severity={severity}>{alertText}</Alert>}
     </Container>
   )
 }

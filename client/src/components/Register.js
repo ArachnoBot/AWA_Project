@@ -1,26 +1,22 @@
+import { useTheme } from '@emotion/react';
 import { 
   Stack, 
   Container, 
   Typography, 
   TextField, 
   Button,
-  Alert,
   Link,
 } 
 from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 
-const Register = () => {
-  // States for showing errors to user
-  const [alertText, setAlertText] = useState("error")
-  const [alert, setAlert] = useState(false)
+const Register = ({alertFunc}) => {
+  const navigate = useNavigate()
+  const theme = useTheme()
 
-  const navigate = useNavigate();
-
-  const handleRegister = () => {
+  const handleRegister = async () => {
     // Send email and password to backend for registering
-    fetch("/api/register", {
+    const res = await fetch("/api/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -30,51 +26,52 @@ const Register = () => {
         password: document.getElementById("passwordInput").value
       })
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        // If successful, set the token to storage and go to page where you can edit account info
-        localStorage.setItem("auth_token", data.token)
-        navigate("/editInfo")
-      } else {
-        // If not successful display alert with error message
-        setAlertText(data.errmsg)
-        setAlert(true)
-      }
-    })
+    const data = await res.json()
+    if (data.success) {
+      // If successful, set the token to storage and go to page where you can edit account info
+      localStorage.setItem("auth_token", data.token)
+      navigate("/editInfo")
+    } else {
+      // If not successful display alert with error message
+      alertFunc("error", data.errmsg)
+    }
   }
 
   return (
-    <Container maxWidth="sm">
-      <Typography variant="h2" align="center" style={{ marginBottom: '25px' }}>
-        Match
-      </Typography>
-      <Stack border={2} borderColor="grey.300" borderRadius={5} p={3}>
-        <Typography variant="h5" align="center" gutterBottom>Register</Typography>
-          <Typography align='left'>Email address</Typography>
-          <TextField
-            id='emailInput'
-            fullWidth
-            margin="normal"
-            type="email"
-            style={{ marginBottom: '25px' }}
-          />
-        <Typography align='left'>Password</Typography>
-          <TextField
-            id='passwordInput'
-            fullWidth
-            margin="normal"
-            type="password"
-            style={{ marginBottom: '30px' }}
-          />
-        <Button variant="contained" color="primary" fullWidth onClick={handleRegister}>
+    <Container sx={{width:"450px"}}>
+      <Stack className='border' p={3}>
+        <Typography 
+          variant="h5" 
+          align="center" 
+          gutterBottom 
+          color={theme.palette.textColor}>
+          Register
+        </Typography>
+        <Typography align='left' color={theme.palette.textColor}>Email address</Typography>
+        <TextField
+          id='emailInput'
+          fullWidth
+          margin="normal"
+          type="email"
+          InputProps={{ sx: { backgroundColor: theme.palette.textFieldBg }}}
+          sx={{ marginBottom: '25px', '& input': {color: theme.palette.textColor}}}
+        />
+        <Typography align='left' color={theme.palette.textColor}>Password</Typography>
+        <TextField
+          id='passwordInput'
+          fullWidth
+          margin="normal"
+          type="password"
+          InputProps={{ sx: { backgroundColor: theme.palette.textFieldBg }}}
+          sx={{ marginBottom: '30px', '& input': {color: theme.palette.textColor}}}
+        />
+        <Button variant="contained" fullWidth onClick={handleRegister}>
           Register
         </Button>
         <Link href="/login" marginTop={2}>
           {"Already have an account? Sign in"}
         </Link>
       </Stack>
-      {alert && <Alert severity='error'>{alertText}</Alert>}
     </Container>
   )
 }
