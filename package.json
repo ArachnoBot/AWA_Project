@@ -1,16 +1,15 @@
 {
   "name": "week12",
   "version": "1.0.0",
-  "description": "Week 12 task",
+  "description": "AWA project",
   "main": "index.js",
   "scripts": {
-    "install": "cd client && npm install",
     "dev:client": "cd client && npm start",
     "preinstall": "cd server && npm install",
     "dev:server": "cd server && cross-env NODE_ENV=development npm run dev",
     "prod:client": "cd client && npm install && npm run build",
-    "prod:server": "cd server && npm install && cross-env NODE_ENV=production nodemon bin/www",
-    "start": "npm run prod:client && npm run prod:server"
+    "prod:server": "cd server && npm install && cross-env NODE_ENV=production node bin/www",
+    "start": "npm install && npm run prod:client && npm run prod:server"
   },
   "author": "Leevi Lautanen",
   "license": "ISC",
