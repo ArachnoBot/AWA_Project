@@ -15,7 +15,7 @@ const TabMenu = (props) => {
   const theme = useTheme()
   const [value, setValue] = useState(props.index);
 
-  const handleInput = (e) => {
+  const handleTabClick = (e) => {
     setValue(e.target.tabIndex);
   }
 
@@ -25,19 +25,40 @@ const TabMenu = (props) => {
   }
 
   return (
-    <Container sx={{display:"flex"}} className='tabMenuContainer'>
-        <Tabs sx={{flexGrow:1, '& .MuiTab-root': {color: theme.palette.textColor},}} 
-          variant='fullWidth' value={value} onChange={handleInput}>
-          <Tab label="home" tabIndex={0} component={Link} to="/home"></Tab>
-          <Tab label="profile" tabIndex={1} component={Link} to="/editinfo"></Tab>
-          <Tab label="messages" tabIndex={2} component={Link} to="/messages"></Tab>
-        </Tabs>
-        <Divider sx={{marginX:1}} orientation='vertical' flexItem></Divider>
-        <Button
-          sx={{minWidth:"fit-content"}} 
-          onClick={handleLogout} 
-          color="primary">
-        Sign out</Button>
+    <Container
+      className='border'
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        paddingY: 0,
+        marginBottom: "10px",
+        alignItems: "center"
+      }}
+    >
+      <Tabs 
+        sx={{flexGrow: 1, '& .MuiTab-root': {color: theme.palette.textColor}}} 
+        variant='fullWidth' 
+        value={value} 
+        onChange={handleTabClick}
+      >
+        <Tab label="home" tabIndex={0} component={Link} to="/home"></Tab>
+        <Tab label="profile" tabIndex={1} component={Link} to="/editinfo"></Tab>
+        <Tab label="messages" tabIndex={2} component={Link} to="/messages"></Tab>
+      </Tabs>
+      <Divider 
+        sx={{marginX: 1}} 
+        color={theme.palette.dividerColor} 
+        orientation='vertical' 
+        flexItem
+      >
+      </Divider>
+      <Button
+        sx={{minWidth: "fit-content"}} 
+        onClick={handleLogout} 
+        color="primary"
+      >
+        Sign out
+      </Button>
     </Container>
   )
 }

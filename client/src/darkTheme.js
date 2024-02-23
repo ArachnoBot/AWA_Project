@@ -11,20 +11,35 @@ const theme = createTheme({
     },
     background: {
       main: blueGrey[900],
-      box: blueGrey[700]
+      box: blue[900]
     },
     message: {
-      home: blue[600],
+      home: blue[800],
       away: blueGrey[600],
       time: grey[300]
     },
     textColor: grey[300],
     iconColor: grey[300],
-    textFieldBg: blueGrey[700]
+    textFieldBg: blueGrey[700],
+    dividerColor: blue[600]
   },
   breakpoints: {
     values: {
       desktop: 600
+    }
+  },
+  components: {
+    MuiListItemButton: {
+      styleOverrides: {
+        root: ({ ownerState, theme }) => ({
+          "&.Mui-selected": {
+            "&:hover": {
+              backgroundColor: blue[900]
+            },
+          },
+          borderRadius: "10px"
+        })
+      }
     }
   }
 })

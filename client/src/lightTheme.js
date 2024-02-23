@@ -1,7 +1,5 @@
-import { light } from "@mui/material/styles/createPalette";
-
 const { createTheme } = require("@mui/material");
-const { blue, red, blueGrey, grey } = require("@mui/material/colors");
+const { blue, red, grey } = require("@mui/material/colors");
 
 const theme = createTheme({
   palette: {
@@ -12,18 +10,32 @@ const theme = createTheme({
       main: red[500]
     },
     background: {
-      main: light,
-      box: blue[100]
+      main: "",
+      box: blue[500]
     },
     message: {
-      home: blue[200],
-      away: blueGrey[100],
-      time: grey[700]
+      home: blue[500],
+      away: blue[200],
+      time: grey[800]
     }
   },
   breakpoints: {
     values: {
       desktop: 600
+    }
+  },
+  components: {
+    MuiListItemButton: {
+      styleOverrides: {
+        root: ({ ownerState, theme }) => ({
+          "&.Mui-selected": {
+            "&:hover": {
+              backgroundColor: blue[500]
+            },
+          },
+          borderRadius: "10px"
+        })
+      }
     }
   }
 })

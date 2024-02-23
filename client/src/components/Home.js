@@ -19,14 +19,13 @@ import TabMenu from './TabMenu';
 const Home = ({alertFunc}) => {
   const theme = useTheme()
   const desktop = useMediaQuery(theme.breakpoints.up("desktop"))
+  const navigate = useNavigate()
 
-  // States
   const [name, setName] = useState("")
   const [bioHead, setBioHead] = useState("")
   const [bioText, setBioText] = useState("")
   const [likeEmail, setLikeEmail] = useState("")
-
-  const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState("")
 
   useEffect(() => {
     // Send user back to login page if no token found
@@ -36,17 +35,15 @@ const Home = ({alertFunc}) => {
     getRandomUser()
   }, [navigate]);
 
-  const handleLike = () => {
+  const handleLike = (choice) => {
+    // Tell the server you have liked/disliked a user
     fetch("/api/addLikes", {
       method: "POST",
       headers: {
         "authorization": localStorage.getItem("auth_token"),
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        email: likeEmail,
-        choice: "like"
-      })
+      body: JSON.stringify({email: likeEmail, choice: choice})
     })
     .then(res => res.json())
     .then(data => {
@@ -58,34 +55,11 @@ const Home = ({alertFunc}) => {
     })
   }
   
-  const handleDislike = () => {
-    fetch("/api/addLikes", {
-      method: "POST",
-      headers: {
-        "authorization": localStorage.getItem("auth_token"),
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: likeEmail,
-        choice: "dislike"
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        getRandomUser()
-      } else {
-        alertFunc("error", data.errmsg)
-      }
-    })
-  }
-
   const getRandomUser = () => {
+    // Get random user from server to show on homepage
     fetch("/api/getRandomUser", {
       method: "GET",
-      headers: {
-        "authorization": localStorage.getItem("auth_token"),
-      }
+      headers: {"authorization": localStorage.getItem("auth_token")}
     })
     .then(res => res.json())
     .then(data => {
@@ -95,11 +69,13 @@ const Home = ({alertFunc}) => {
           setName(data.name)
           setBioHead(data.bioHead)
           setBioText(data.bioText)
+          setAvatarUrl(data.avatarUrl)
         } else {
           setLikeEmail("")
           setName("")
           setBioHead("No more new users, try again later")
           setBioText("")
+          setAvatarUrl("")
         }
       } else {
         alertFunc("error", data.errmsg)
@@ -109,10 +85,19 @@ const Home = ({alertFunc}) => {
 
   return (
     <Container>
-      {!desktop && localStorage.getItem("auth_token") && <TabMenu index={0}></TabMenu>}
+      {!desktop && localStorage.getItem("auth_token") &&
+      <TabMenu index={0}></TabMenu>}
       <Box className="contentBox">
-        <Stack className='border' sx={{maxWidth:"800px", minWidth:"350px", padding:"15px"}}>
-          <UserInfo name={name} bioHead={bioHead} bioText={bioText}/>
+        <Stack 
+          className='border' 
+          sx={{maxWidth:"800px", flexGrow:1, padding:"15px"}}
+        >
+          <UserInfo 
+            name={name} 
+            bioHead={bioHead} 
+            bioText={bioText} 
+            avatarUrl={avatarUrl}
+          />
           <Box
             display={"flex"}
             flexDirection={"row"}
@@ -120,10 +105,10 @@ const Home = ({alertFunc}) => {
             height={"fit-content"}
             p={1}
           >
-            <IconButton onClick={handleLike} color='primary'>
+            <IconButton onClick={()=>{handleLike("like")}} color='primary'>
               <ThumbUp style={{fontSize:50}}/>
             </IconButton>
-            <IconButton onClick={handleDislike} color="secondary">
+            <IconButton onClick={()=>{handleLike("dislike")}} color="secondary">
               <ThumbDown style={{fontSize:50}}/>
             </IconButton>
           </Box>

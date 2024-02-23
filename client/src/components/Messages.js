@@ -9,6 +9,7 @@ import {
   TextField,
   IconButton,
   useMediaQuery,
+  Avatar,
 } 
 from '@mui/material'
 import Menu from "./Menu"
@@ -24,13 +25,10 @@ const Messages = ({alertFunc}) => {
   const theme = useTheme()
   const desktop = useMediaQuery(theme.breakpoints.up("desktop"))
   
-  // States
   const [messageList, setMessageList] = useState()
   const [userList, setUserList] = useState([])
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [msgInput, setMsgInput] = useState("")
-
-  // Navigate for redirects
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -50,14 +48,12 @@ const Messages = ({alertFunc}) => {
 
   const checkForNewMessages = async () => {
     const res = await fetch("/api/checkNewMessages", {
-      headers: {
-        "authorization": localStorage.getItem("auth_token")
-      }
+      headers: {"authorization": localStorage.getItem("auth_token")}
     })
     const data = await res.json()
+    // If hasNewMessages flag is true, get messages again from server
     if (data.hasNewMessages) {
       getMessageData(selectedIndex)
-      console.log("new messages found")
     }
     else if(!data.success) {
       alertFunc("error", data.errmsg)
@@ -65,11 +61,10 @@ const Messages = ({alertFunc}) => {
   }
 
   const getMessageData = async (userIndex) => {
+    // Get the users you can chat with
     let localUserList = []
     const userRes = await fetch("/api/getMessageUsers", {
-      headers: {
-        "authorization": localStorage.getItem("auth_token")
-      }
+      headers: {"authorization": localStorage.getItem("auth_token")}
     })
     const userData = await userRes.json() 
     if (userData.success) {
@@ -78,9 +73,11 @@ const Messages = ({alertFunc}) => {
     } else {
       alertFunc("error", userData.errmsg)
     }
+    // If nobody found, stop here
     if (localUserList.length === 0) {
       return
     }
+    // Otherwise get messages from user in user list with parameter index
     const messageRes = await fetch("/api/getMessages", {
       method: "POST",
       headers: {
@@ -92,19 +89,22 @@ const Messages = ({alertFunc}) => {
       })
     })
     const messageData = await messageRes.json()
+    // Handle unexpected data
     if (!messageData.success) {
-      console.log("failed to get messages")
+      alertFunc("error", messageData.errmsg)
       return
     } else if (messageData.messageDoc == null) {
       setMessageList(null)
       return
     }
+    // Create the data that will be send to MessageList to render the messages
     let localMessageList = []
     const awayEmail = localUserList[userIndex].email
     const doc = messageData.messageDoc
     for (const log of doc.log) {
+      // Check who sent the message
       const sentByAway = awayEmail === doc.group[log.sender]
-      console.log(log.timestamp)
+      // Format time to easily readable form
       const dateString = new Date(log.timestamp).toLocaleString('en-GB')
       localMessageList.push({
         sentByAway: sentByAway,
@@ -115,7 +115,8 @@ const Messages = ({alertFunc}) => {
     setMessageList(localMessageList)
   }
 
-  const createSideButtons = () => {
+  const createUserList = () => {
+    // Inform user if there is nobody to chat with
     if (userList.length === 0) {
       return (
         <Typography color={theme.palette.textColor}>
@@ -123,17 +124,24 @@ const Messages = ({alertFunc}) => {
         </Typography>
       )
     }
+    // Create a list of buttons with usernames and avatars
     const listItems = userList.map((user, index) => {
-      const username = user.email.split("@")[0]
       return (
         <ListItemButton
-          key={index}
-          selected={selectedIndex === index}
+          key={index} 
+          selected={index === selectedIndex}
           onClick={(event)=> handleItemClick(event, index)}
+          sx={{paddingY: "0px", minWidth: "fit-content"}}
         >
-          <ListItemText 
-            sx={{wordBreak:"break-word", padding:1, color: theme.palette.textColor}}>
-            {username}
+          <Avatar src={user.avatarFile} sx={{height: 32, width: 32}}></Avatar>
+          <ListItemText
+            sx={{
+              wordBreak: "break-word",
+              padding: 1, 
+              color: theme.palette.textColor
+            }}
+          >
+            {user.name}
           </ListItemText>
         </ListItemButton>
       )
@@ -141,7 +149,7 @@ const Messages = ({alertFunc}) => {
     return (<Stack>{listItems}</Stack>)
   }
 
-  const handleItemClick = (event, index) => {
+  const handleItemClick = async (event, index) => {
     getMessageData(index)
     setSelectedIndex(index)
   }
@@ -153,13 +161,13 @@ const Messages = ({alertFunc}) => {
   }
 
   const handleKeystroke = (event) => {
-    console.log()
     if (event.nativeEvent.inputType !== "insertLineBreak") {
       setMsgInput(event.target.value)
     }
   }
 
   const sendMessage = () => {
+    // Send receiver email and message content to backend
     fetch("/api/sendMessage", {
       method: "POST",
       headers: {
@@ -174,6 +182,7 @@ const Messages = ({alertFunc}) => {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
+        // If successful get messages again and clear input box content
         getMessageData(selectedIndex)
         setMsgInput("")
       } else {
@@ -181,69 +190,123 @@ const Messages = ({alertFunc}) => {
       }
     })
   }
-
-  if (userList && desktop) {
+  
+  if (desktop) {
     return (
-      <Container sx={{display:"flex", flexDirection:"row",  maxWidth:"900px", height:"80%", maxHeight:"80%"}}>
-        <Stack sx={{flexGrow:1, maxHeight:"100%"}} className='shitstack'>
-          <Stack className="messageContentStack" >
-              <MessageList messageList={messageList} alertFunc={alertFunc}/>
-              <Box className="sendMessageBox">
-                <TextField
-                  color="primary"
-                  id='msgInput'
-                  fullWidth
-                  multiline
-                  margin="normal"
-                  type="text"
-                  InputProps={{ sx: { backgroundColor: theme.palette.textFieldBg }}}
-                  sx={{'& textarea': {color: theme.palette.textColor}}}
-                  value={msgInput}
-                  onKeyDown={checkForSend}
-                  onChange={handleKeystroke}
-                />
-                <IconButton onClick={sendMessage} style={{marginTop:5}}>
-                  <SendIcon sx={{fontSize:30, color: theme.palette.iconColor}}/>
-                </IconButton>
-              </Box>
-            </Stack>
+      <Container 
+        sx={{
+          display: "flex", 
+          flexDirection: "row",  
+          maxWidth: "900px", 
+          flexGrow: 1,
+          minHeight: "310px",
+          paddingBottom: "16px"
+        }}
+      >
+        <Stack sx={{flexGrow: 1}}>
+          <Stack 
+            className='border' 
+            sx={{
+              padding: "15px", 
+              justifyContent: "flex-end", 
+              minHeight: 0, 
+              flexGrow: 1
+            }}
+          >
+            <MessageList 
+              messageList={messageList} 
+              alertFunc={alertFunc}
+            />
+            {userList.length !== 0 && 
+            <Box sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+              <TextField
+                color="primary"
+                id='msgInput'
+                fullWidth
+                multiline
+                margin="normal"
+                type="text"
+                InputProps={{sx: {backgroundColor: theme.palette.textFieldBg}}}
+                sx={{'& textarea': {color: theme.palette.textColor}}}
+                value={msgInput}
+                onKeyDown={checkForSend}
+                onChange={handleKeystroke}
+              />
+              <IconButton onClick={sendMessage} style={{marginTop: 5}}>
+                <SendIcon sx={{fontSize: 30, color: theme.palette.iconColor}}/>
+              </IconButton>
+            </Box>}
+          </Stack>
         </Stack>
         <Stack>
           <Menu></Menu>
-          <Stack className="sideButtonStack">
-            <List>{createSideButtons()}</List>
+          <Stack
+            className="border"
+            sx={{
+              padding: "10px", 
+              marginLeft: "10px", 
+              marginTop: "10px", 
+              overflowY: "auto",
+              flexGrow: 1,
+              width: "150px"
+            }}
+          >
+            <List>{createUserList()}</List>
           </Stack>
         </Stack>
-        
       </Container>
     )
-  } else if (userList && !desktop) {
+  } else {
     return (
-      <Container sx={{display:"flex", flexDirection:"column", height:"80%", maxHeight:"80%"}}>
+      <Container 
+        sx={{
+          display: "flex", 
+          flexDirection: "column",
+          flexGrow: 1,
+          minHeight: "400px"
+        }}
+      >
         <TabMenu index={2}></TabMenu>
-        <Stack sx={{flexGrow:1, maxHeight:"100%"}}>
-          <Stack className='messageContentStack' sx={{maxHeight:"70%"}}>
+        <Stack sx={{flexGrow: 1, minHeight: 0}}>
+          <Stack 
+            className='border' 
+            sx={{
+              padding: "15px", 
+              justifyContent: "flex-end", 
+              minHeight: 0, 
+              flexGrow: 1
+            }}
+          >
             <MessageList messageList={messageList} alertFunc={alertFunc}/>
-            <Box className="sendMessageBox">
-            <TextField
-              id='msgInput'
-              fullWidth
-              multiline
-              margin="normal"
-              type="text"
-              InputProps={{ sx: { backgroundColor: theme.palette.textFieldBg }}}
-              sx={{'& textarea': {color: theme.palette.textColor}}}
-              value={msgInput}
-              onKeyDown={checkForSend}
-              onChange={handleKeystroke}
-            />
-              <IconButton onClick={sendMessage} style={{marginTop:5}}>
-                <SendIcon sx={{fontSize:30, color: theme.palette.iconColor}}/>
+            <Box sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+              <TextField
+                id='msgInput'
+                fullWidth
+                multiline
+                margin="normal"
+                type="text"
+                InputProps={{ sx: { backgroundColor: theme.palette.textFieldBg }}}
+                sx={{'& textarea': {color: theme.palette.textColor}}}
+                value={msgInput}
+                onKeyDown={checkForSend}
+                onChange={handleKeystroke}
+              />
+              <IconButton onClick={sendMessage} style={{marginTop: 5}}>
+                <SendIcon sx={{fontSize: 30, color: theme.palette.iconColor}}/>
               </IconButton>
             </Box>
           </Stack>
-          <Stack className="underButtonStack">
-            <List>{createSideButtons()}</List>
+          <Stack
+            className="border"
+            sx={{
+              padding: "10px",
+              marginY: "10px",
+              overflowY: "auto",
+              height: "100px",
+              minHeight: "100px"
+            }}
+          >
+            <List>{createUserList()}</List>
           </Stack>
         </Stack>
       </Container>

@@ -24,13 +24,10 @@ function App() {
   const [colorTheme, setColorTheme] = useState(parseInt(storedTheme))
 
   let theme = lightTheme
-  if (colorTheme == 0) {
-    theme = lightTheme
-  }
-  else if (colorTheme == 1) {
+  if (colorTheme === 1) {
     theme = darkTheme
   }
-  else if (colorTheme == 2) {
+  else if (colorTheme === 2) {
     theme = blackTheme
   }
 
@@ -55,13 +52,15 @@ function App() {
           <Typography 
             align='center'
             variant='h3'
-            marginBottom={2}
+            sx={{marginBottom:"5px", marginTop:"5x"}}
             color={theme.palette.textColor}
           >Match</Typography>
             <Routes>
               <Route path="/" element={<Login alertFunc={alertFunc}/>}/>
               <Route path="/login" element={<Login alertFunc={alertFunc}/>}/>
               <Route path="/register" element={<Register alertFunc={alertFunc}/>}/>
+              <Route path="/home" element={<Home alertFunc={alertFunc}/>}/>
+              <Route path="/messages" element={<Messages alertFunc={alertFunc}/>}/>
               <Route
                 path="/editinfo" 
                 element={
@@ -72,10 +71,18 @@ function App() {
                   />
                 }
               />
-              <Route path="/home" element={<Home alertFunc={alertFunc}/>}/>
-              <Route path="/messages" element={<Messages alertFunc={alertFunc}/>}/>
             </Routes>
-            <Container sx={{padding:3, width:"fit-content"}}>
+            <Container
+              sx={{
+                padding:2, 
+                width:"fit-content", 
+                zIndex:10,
+                position: "absolute",
+                transform: "translate(-50%, -50%)",
+                left:"50%",
+                top:"85%"
+              }}
+            >
               {severity && <Alert severity={severity}>{alertText}</Alert>}
             </Container>
         </div>
