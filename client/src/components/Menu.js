@@ -30,7 +30,7 @@ const Menu = () => {
           <Button color="primary">Home</Button>
         </Link>
         <Link href="/editinfo">
-          <Button color="primary">Edit profile</Button>
+          <Button color="primary">Profile</Button>
         </Link>
         <Link href="/messages">
           <Button color="primary">Messages</Button>
