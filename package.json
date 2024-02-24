@@ -6,7 +6,7 @@
   "scripts": {
     "installClient": "cd client && npm install",
     "installServer": "cd server && npm install",
-    "installAll": "npm run installServer && npm run installClient",
+    "installAll": "npm install && npm run installServer && npm run installClient",
     "dev:server": "cd server && cross-env NODE_ENV=development npm run dev",
     "dev:client": "cd client && npm start",
     "startDev": "npm run installAll && npm run dev:server && npm run dev:client",
