@@ -33,6 +33,7 @@ const theme = createTheme({
       styleOverrides: {
         root: ({ ownerState, theme }) => ({
           "&.Mui-selected": {
+            backgroundColor: blueGrey[900],
             "&:hover": {
               backgroundColor: blueGrey[900]
             },

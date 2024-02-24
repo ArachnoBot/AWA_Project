@@ -131,7 +131,7 @@ const Messages = ({alertFunc}) => {
           key={index} 
           selected={index === selectedIndex}
           onClick={(event)=> handleItemClick(event, index)}
-          sx={{paddingY: "0px", minWidth: "fit-content"}}
+          sx={{paddingX: "5px", paddingY: 0, minWidth: "fit-content"}}
         >
           <Avatar src={user.avatarFile} sx={{height: 32, width: 32}}></Avatar>
           <ListItemText
@@ -248,7 +248,7 @@ const Messages = ({alertFunc}) => {
               marginTop: "10px", 
               overflowY: "auto",
               flexGrow: 1,
-              width: "150px"
+              width: "180px"
             }}
           >
             <List>{createUserList()}</List>

@@ -12,7 +12,7 @@ const multer = require('multer')
 const upload = multer({ dest: 'uploads/' })
 
 // Connect to mongodb
-mongoose.connect("mongodb://127.0.0.1:27017/match2")
+mongoose.connect("mongodb://127.0.0.1:27017/match")
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'))
 
