@@ -9,7 +9,6 @@
     "installAll": "npm install && npm run installServer && npm run installClient",
     "dev:server": "cd server && cross-env NODE_ENV=development npm run dev",
     "dev:client": "cd client && npm start",
-    "startDev": "npm run installAll && npm run dev:server && npm run dev:client",
     "prod:client": "cd client && npm install && npm run build",
     "prod:server": "cd server && npm install && cross-env NODE_ENV=production node bin/www",
     "start": "npm install && npm run prod:server && npm run prod:client"
