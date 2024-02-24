@@ -53,15 +53,12 @@ const isAuthenticated = (req, res, next) => {
 // Adds/changes user profile picture
 router.post("/addProfilePicture", isAuthenticated, upload.single("image"), async (req, res) => {
   try {
-    console.log(req.file.path)
     // Find user who made the request
     const user = await Users.findOne({email: res.locals.userEmail})
-    console.log(user)
 
     // Delete old picture file if exists
     if (user.avatarFile) {
       const files = fs.readdirSync("./uploads/")
-      console.log(files)
       if (files.includes(user.avatarFile)) {
         fs.unlinkSync("./uploads/"+user.avatarFile)
       }
@@ -69,7 +66,6 @@ router.post("/addProfilePicture", isAuthenticated, upload.single("image"), async
 
     // Update picture file name for user document
     if (req.file.path.split("\\")[1]) {
-      console.log(req.file.path.split("\\")[1])
       await Users.updateOne(
         {email: res.locals.userEmail}, 
         {$set: {avatarFile: req.file.path.split("\\")[1]}}
