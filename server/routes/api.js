@@ -9,7 +9,7 @@ const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken')
 const fs = require('fs');
 const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
+const upload = multer({dest: 'uploads/'})
 
 // Connect to mongodb
 mongoose.connect("mongodb://127.0.0.1:27017/match")
@@ -109,7 +109,6 @@ router.post("/sendMessage", isAuthenticated, async (req, res) => {
       timestamp: new Date()
     })
 
-    // Save doc
     messageDoc.save()
 
     // Update the receiver doc to show they have a new message
@@ -136,11 +135,13 @@ router.get("/checkNewMessages", isAuthenticated, async (req, res) => {
     // Find user who made the request
     const user = await Users.findOne({email: res.locals.userEmail})
 
-    // Reset the flag for new messages to false
-    await Users.updateOne(
-      {email: res.locals.userEmail},
-      {"$set": {hasNewMessages: false}}
-    )
+    // Reset the flag for new messages if true
+    if (user.hasNewMessages) {
+      Users.updateOne(
+        {email: res.locals.userEmail},
+        {"$set": {hasNewMessages: false}}
+      )
+    }
 
     // Send info about new messages or catched error
     res.send({
@@ -160,7 +161,7 @@ router.post("/getMessages", isAuthenticated, async (req, res) => {
   try {
     // Find the message document
     const messageDoc = await Messages.findOne({
-      group: { $all: [res.locals.userEmail, req.body.secondUser] }
+      group: {$all: [res.locals.userEmail, req.body.secondUser]}
     })
 
     // Respond with the message document or error
@@ -184,8 +185,8 @@ router.get("/getMessageUsers", isAuthenticated, async (req, res) => {
 
     // Find other users you can message (i.e. both accounts have liked each other)
     let messageUsers = await Users.find({
-      email: { $in: user.liked },
-      liked: { $in: res.locals.userEmail }
+      email: {$in: user.liked},
+      liked: {$in: res.locals.userEmail}
     }, {_id: 0, email: 1, name: 1, avatarFile: 1})
 
     // Convert avatarFile attributes into usable urls
@@ -237,7 +238,7 @@ router.get("/getRandomUser", isAuthenticated, async (req, res) => {
 
     // Set parameters to not include in database search
     // (your account and users who have already liked/disliked you)
-    const excludedUsers = [...user.liked, ...user.disliked, user.email]
+    const excludedUsers = [user.email, ...user.liked, ...user.disliked]
 
     // Get first user excluding the above
     const found = await Users.findOne({email: {$nin : excludedUsers}})
@@ -290,7 +291,6 @@ router.post("/addLikes", isAuthenticated, async (req, res) => {
       user.disliked.push(req.body.email)
     }
 
-    // Save changes
     await user.save()
   
     // Send success true or false with caught error
@@ -316,7 +316,6 @@ router.post("/updateUserInfo", isAuthenticated, async (req, res) => {
     user.bioHead = req.body.bioHead,
     user.bioText = req.body.bioText
   
-    // Save changes
     await user.save()
   
     // Send success true or false with caught error
@@ -370,11 +369,8 @@ router.post("/register",
         return res.status(403).send({success: false, errmsg: "Email already in use."})
       }
 
-      // USE BCRYPT BEFORE FINISHING
-
       // Convert the user given password to a hashed one
-      //const hashedPassword = await bcrypt.hash(req.body.password, 10)
-      const hashedPassword = req.body.password
+      const hashedPassword = await bcrypt.hash(req.body.password, 10)
 
       // Add a new user to the database with given info
       await Users.create({
@@ -408,14 +404,11 @@ router.post("/login", async (req, res) => {
     // Find user who made the request
     const user = await Users.findOne({email: req.body.email})
 
-    // USE BCRYPT BEFORE FINISHING
-
     // Send back error messages if user is not found or if password is wrong
     if (!user) {
       return res.send({success: false, errmsg: "No user found with given email"})
     } 
-    //else if (await bcrypt.compare(req.body.password, user.password) == false) {
-    else if (req.body.password != user.password) {
+    else if (await bcrypt.compare(req.body.password, user.password) == false) {
       return res.send({success: false, errmsg: "Wrong password"})
     }
 
@@ -431,22 +424,6 @@ router.post("/login", async (req, res) => {
       errmsg: e.toString()
     })
   }
-})
-
-router.get("/debug/nuke", (req, res) => {
-  db.db.collection("users").drop()
-  db.db.collection("messages").drop()
-  res.send("deleted")
-})
-
-router.get("/debug/users", async (req, res) => {
-  const users = await Users.find()
-  res.send(users)
-})
-
-router.get("/debug/messages", async (req, res) => {
-  const msgs = await Messages.find()
-  res.send(msgs)
 })
 
 router.get("/debug/reset", async (req, res) => {
