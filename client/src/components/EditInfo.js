@@ -139,7 +139,11 @@ const EditInfo = ({alertFunc, setColorTheme, colorTheme}) => {
             ></Avatar>
             <Typography 
               variant="h5" 
-              sx={{color: theme.palette.textColor}}
+              sx={{
+                color: theme.palette.textColor, 
+                flexGrow: 1, 
+                textAlign: "center"
+              }}
             >
               Your account's information
             </Typography>
@@ -221,12 +225,12 @@ const EditInfo = ({alertFunc, setColorTheme, colorTheme}) => {
             onChange={handleTextInput}
           />
           <Container 
-            sx={{display:"flex", justifyContent: 'space-between', padding:0}}
+            sx={{display:"flex", justifyContent: 'space-evenly', padding:0}}
           >
             <Button
               component="label"
               variant="contained"
-              sx={{width:"150px"}}
+              sx={{padding: "8px"}}
             > 
               Upload avatar
               <Input 
@@ -239,12 +243,14 @@ const EditInfo = ({alertFunc, setColorTheme, colorTheme}) => {
               variant="contained"
               color="primary"
               onClick={handleSave}
+              sx={{padding: "8px"}}
             >
               Save text
             </Button>
             <Button
               variant="contained"
               onClick={handleThemeChange}
+              sx={{padding: "8px"}}
             >
               Change theme
             </Button>

@@ -4,12 +4,12 @@
   "description": "AWA project",
   "main": "index.js",
   "scripts": {
-    "dev:client": "cd client && npm start",
-    "preinstall": "cd server && npm install",
+    "preinstall": "cd server && npm install && cd client && npm install",
     "dev:server": "cd server && cross-env NODE_ENV=development npm run dev",
+    "dev:client": "cd client && npm start",
     "prod:client": "cd client && npm install && npm run build",
     "prod:server": "cd server && npm install && cross-env NODE_ENV=production node bin/www",
-    "start": "npm install && npm run prod:client && npm run prod:server"
+    "start": "npm install && npm run prod:server && npm run prod:client"
   },
   "author": "Leevi Lautanen",
   "license": "ISC",
